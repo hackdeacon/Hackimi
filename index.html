@@ -1,45 +1,936 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hackimi | Refined AI-Native DevTools</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hackimi — The open source AI coding agent</title>
+<meta name="description" content="Hackimi is the open-source AI coding agent that lives in your terminal and your IDE. Local-first, context-aware, and yours.">
+<meta name="theme-color" content="#fdfcfc">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23201d1d'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' fill='%23fdfcfc' text-anchor='middle'%3E%!%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* opencode monochrome palette */
+    --primary:#201d1d; --primary-active:#0f0000;
+    --ink:#201d1d; --body:#424245; --muted:#646262; --muted-soft:#9a9898;
+    --hairline:rgba(15,0,0,.12); --hairline-soft:#efeee8; --hairline-strong:#646262;
+    --canvas:#fdfcfc; --canvas-soft:#fafaf7; --surface-card:#f1eeee; --surface-strong:#e6e5e0;
+    --on-primary:#fdfcfc;
+    --semantic-error:#cf2d56; --semantic-success:#1f8a65;
+    /* opencode surfaces */
+    --surface-snippet:#f1eeee;
+    --surface-dark:#201d1d; --surface-dark-elevated:#302c2c;
+    --on-dark:#fdfcfc; --on-dark-mute:#9a9898;
+    /* semantic colors scoped to the in-product TUI only */
+    --tui-accent:#007aff; --tui-zen:#ff9f0a;
+    /* type */
+    --font-display:'Inter','Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,Monaco,Consolas,monospace;
+    --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-pill:9999px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--canvas); color:var(--ink);
+    font-family:var(--font-mono);
+    font-size:16px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  main section[id],main div[id]{scroll-margin-top:84px;}
+  ::selection{background:var(--ink);color:var(--canvas);}
+  a{color:var(--ink);text-decoration:none;}
+  button{font-family:var(--font-mono);cursor:pointer;background:none;border:0;color:inherit;}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+
+  /* ---------- type ---------- */
+  .display-mega{
+    font-family:var(--font-display);
+    font-size:72px;font-weight:400;line-height:1.1;letter-spacing:-2.16px;color:var(--ink);
+  }
+  .display-lg{
+    font-family:var(--font-display);
+    font-size:36px;font-weight:400;line-height:1.2;letter-spacing:-.72px;color:var(--ink);
+  }
+  .display-md{
+    font-family:var(--font-display);
+    font-size:26px;font-weight:400;line-height:1.25;letter-spacing:-.325px;color:var(--ink);
+  }
+  .title-md{font-family:var(--font-display);font-size:18px;font-weight:600;line-height:1.4;color:var(--ink);}
+  .body-md{font-size:16px;font-weight:400;line-height:1.5;color:var(--body);}
+  .caption-sm{font-size:13px;font-weight:400;line-height:1.4;color:var(--muted);}
+  .label-up{
+    font-size:11px;font-weight:600;line-height:1.4;letter-spacing:.88px;text-transform:uppercase;
+  }
+  .link-inline{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+  .link-inline:hover{color:var(--muted);}
+
+  /* ---------- buttons ---------- */
+  .btn-primary{
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--primary);color:var(--on-primary);
+    font-size:14px;font-weight:500;line-height:1;
+    padding:10px 18px;height:40px;border-radius:var(--r-md);
+    transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--primary-active);}
+  .btn-secondary{
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--canvas);color:var(--ink);
+    font-size:14px;font-weight:500;line-height:1;
+    padding:9px 17px;height:40px;
+    border:1px solid var(--hairline-strong);border-radius:var(--r-md);
+    transition:border-color .15s ease;
+  }
+  .btn-secondary:hover{border-color:var(--ink);}
+  .btn-tertiary{
+    font-size:14px;font-weight:500;line-height:1;color:var(--ink);
+    padding:10px 12px;border-radius:var(--r-md);
+  }
+  .btn-tertiary:hover{text-decoration:underline;}
+
+  .badge-pill{
+    display:inline-flex;align-items:center;
+    background:var(--surface-dark);color:var(--on-dark);
+    border-radius:var(--r-pill);padding:4px 10px;
+    font-size:11px;font-weight:600;letter-spacing:.88px;text-transform:uppercase;
+  }
+
+  /* ---------- nav ---------- */
+  .top-nav{
+    position:sticky;top:0;z-index:50;
+    background:var(--canvas);
+    border-bottom:1px solid var(--hairline-soft);
+  }
+  .nav-inner{
+    max-width:1200px;margin:0 auto;height:64px;
+    padding:0 24px;
+    display:flex;align-items:center;gap:24px;
+  }
+  .wm{
+    width:118px;height:16px;color:var(--ink);
+    display:block;flex-shrink:0;
+  }
+  .nav-links{display:flex;gap:26px;margin:0 auto;}
+  .nav-links a{font-size:14px;font-weight:500;color:var(--ink);}
+  .nav-links a:hover{color:var(--muted);}
+  .nav-links a .k{color:var(--muted);font-weight:400;}
+  .nav-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .signin{font-size:14px;font-weight:500;color:var(--ink);}
+  .signin:hover{color:var(--muted);}
+  .hamburger{
+    display:none;width:40px;height:40px;align-items:center;justify-content:center;
+    border:1px solid var(--hairline-strong);border-radius:var(--r-md);
+    background:var(--surface-card);color:var(--ink);
+  }
+  .mobile-sheet{
+    display:none;position:fixed;top:64px;left:0;right:0;z-index:49;
+    background:var(--canvas);border-bottom:1px solid var(--hairline);
+    padding:16px 24px 24px;
+  }
+  .mobile-sheet.open{display:block;}
+  .mobile-sheet a{
+    display:block;padding:12px 0;font-size:15px;font-weight:500;color:var(--ink);
+    border-bottom:1px solid var(--hairline-soft);
+  }
+  .mobile-sheet a:last-child{border-bottom:0;}
+  .mobile-sheet .btn-primary{display:inline-flex;margin-top:12px;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1200px;margin:0 auto;padding:88px 24px 48px;text-align:center;
+  }
+  .hero h1{max-width:860px;margin:24px auto 20px;}
+  .hero h1 .accent{color:var(--muted-soft);}
+  .hero .sub{
+    max-width:560px;margin:0 auto 32px;font-size:16px;color:var(--body);
+  }
+  .hero-ctas{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;}
+  .hero-note{margin-top:16px;font-size:13px;color:var(--muted);}
+
+  /* ---------- install ---------- */
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px;}
+  .section{max-width:960px;margin:0 auto;padding:96px 24px 0;}
+  .install-section{padding-top:0;}
+  .install-inner{max-width:720px;margin:0 auto;}
+  .k{letter-spacing:1px;color:var(--muted);display:inline-block}
+  .install-tabs{
+    display:flex;gap:4px;flex-wrap:wrap;
+    border-bottom:2px solid var(--hairline-strong);
+    margin-bottom:12px;
+  }
+  .tab-btn{
+    color:var(--muted);font-size:14px;font-weight:500;line-height:2;
+    padding:8px 16px;
+    margin-bottom:-2px;
+    border-bottom:2px solid transparent;
+  }
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--hairline-strong);}
+  .install-snippet{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    background:var(--surface-snippet);
+    padding:12px 16px;border-radius:var(--r-md);
+  }
+  .install-snippet code{
+    font-family:var(--font-mono);font-size:14px;line-height:1.5;color:var(--ink);
+    white-space:pre;overflow-x:auto;flex:1;
+    min-width:0;
+  }
+  .copy-btn{color:var(--muted);font-size:14px;padding:8px;border-radius:var(--r-xs);white-space:nowrap;}
+  .copy-btn:hover{color:var(--ink);}
+  .copy-btn.ok{color:var(--ink);}
+  .install-note{margin-top:12px;font-size:13px;color:var(--muted-soft);}
+
+  /* ---------- TUI mockup ---------- */
+  .tui-frame{
+    margin-top:96px;
+    background:var(--surface-dark);
+    padding:64px 32px;
+  }
+  .tui-inner{max-width:720px;margin:0 auto;}
+  .wm-dark{
+    width:370px;height:50px;color:var(--on-dark);
+    display:block;margin:0 auto 48px;max-width:100%;
+  }
+  .tui-prompt{
+    background:var(--surface-dark-elevated);
+    color:var(--on-dark);
+    font-size:14px;line-height:1.5;
+    padding:8px 12px;border-radius:var(--r-xs);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    font-family:var(--font-mono);
+  }
+  .tui-prompt .pipe{color:var(--on-dark-mute);}
+  .tui-prompt .cmd{color:var(--on-dark);font-weight:500;}
+  .tui-prompt .model{color:var(--tui-accent);}
+  .tui-prompt .zen{color:var(--tui-zen);}
+  .tui-hints{
+    margin-top:24px;text-align:right;
+    font-size:13px;color:var(--on-dark-mute);
+  }
+  .tui-hints span{margin-left:20px;}
+  .tui-frame .btn-tertiary{color:var(--on-dark);}
+  .tui-frame .btn-tertiary:hover{color:var(--on-dark-mute);}
+
+  /* ---------- stats ---------- */
+  .stats{
+    max-width:1200px;margin:96px auto 0;padding:0 24px 0;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  }
+  .stat{border-top:1px solid var(--hairline-strong);padding-top:20px;}
+  .stat .num{
+    font-family:var(--font-mono);
+    font-size:26px;font-weight:400;letter-spacing:-.325px;color:var(--ink);
+  }
+  .stat .label{margin-top:6px;font-size:14px;color:var(--body);}
+
+  /* ---------- section heads ---------- */
+  .sec-head{
+    display:flex;align-items:baseline;gap:12px;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--hairline);
+    padding-bottom:16px;
+  }
+  .sec-head h2{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--ink);}
+  .sec-head .hash{color:var(--muted-soft);}
+  .sec-center{
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    margin-bottom:48px;
+  }
+  .sec-center .eyebrow{color:var(--muted);margin-bottom:16px;}
+  .sec-center .note{margin-top:16px;max-width:480px;}
+
+  /* ---------- features ---------- */
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .feature-card{
+    background:var(--surface-card);
+    border:1px solid var(--hairline);
+    border-radius:var(--r-lg);
+    padding:24px;
+  }
+  .feature-card .f-icon{
+    width:36px;height:36px;border-radius:var(--r-md);
+    background:var(--canvas-soft);border:1px solid var(--hairline);
+    display:inline-flex;align-items:center;justify-content:center;
+    margin-bottom:16px;color:var(--ink);
+  }
+  .feature-card h3{font-family:var(--font-display);font-size:18px;font-weight:600;line-height:1.4;color:var(--ink);margin-bottom:8px;}
+  .feature-card p{font-size:14px;color:var(--body);line-height:1.5;}
+  .feature-card .f-code{margin-top:16px;display:block;font-size:13px;color:var(--muted-soft);font-family:var(--font-mono);}
+
+  /* ---------- list rows ---------- */
+  .list-row{
+    color:var(--body);font-size:16px;line-height:1.5;
+    padding:8px 0;
+    border-bottom:1px solid var(--hairline);
+    display:grid;
+    grid-template-columns:auto max-content minmax(0,1fr);
+    align-items:baseline;
+    column-gap:24px;
+  }
+  .list-row:last-child{border-bottom:0;}
+  .list-row .mark{color:var(--ink);font-weight:700;}
+  .list-row .mark.plus{color:var(--ink);}
+  .list-row .label{color:var(--ink);font-weight:700;min-width:0;}
+  .list-row .desc{color:var(--body);min-width:0;overflow-wrap:anywhere;}
+
+  /* ---------- split / comparison ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+  .split-copy h2{font-family:var(--font-display);font-size:36px;font-weight:400;letter-spacing:-.72px;line-height:1.2;margin-bottom:16px;}
+  .split-copy p{color:var(--body);margin-bottom:24px;max-width:420px;}
+  .split-copy .btn-tertiary{padding-left:0;}
+  .comparison-card{
+    background:var(--surface-card);
+    border:1px solid var(--hairline);
+    border-radius:var(--r-lg);padding:24px;
+  }
+  .comp-head{
+    display:grid;grid-template-columns:minmax(0,1.4fr) minmax(42px,1fr) minmax(76px,1fr);padding-bottom:12px;
+    border-bottom:1px solid var(--hairline);
+    font-size:11px;font-weight:600;letter-spacing:.88px;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .comp-head .us{color:var(--ink);}
+  .comp-row{
+    display:grid;grid-template-columns:minmax(0,1.4fr) minmax(42px,1fr) minmax(76px,1fr);padding:12px 0;
+    border-bottom:1px solid var(--hairline-soft);
+    font-size:14px;color:var(--body);
+  }
+  .comp-head > *, .comp-row > *{min-width:0;overflow-wrap:anywhere;}
+  .comp-row:last-child{border-bottom:0;}
+  .comp-row .label{color:var(--ink);}
+  .comp-row .yes{color:var(--ink);font-weight:700;}
+  .comp-row .no{color:var(--muted-soft);}
+
+  /* ---------- testimonials ---------- */
+  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .testimonial-card{
+    background:var(--surface-card);
+    border:1px solid var(--hairline);
+    border-radius:var(--r-lg);padding:24px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .testimonial-card blockquote{font-size:15px;line-height:1.5;color:var(--body);font-family:var(--font-display);}
+  .testimonial-card blockquote em{font-family:Georgia,serif;color:var(--ink);}
+  .testi-author{margin-top:auto;display:flex;align-items:center;gap:10px;}
+  .testi-author .avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--surface-strong);color:var(--ink);
+    font-size:12px;font-weight:600;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);
+  }
+  .testi-author .name{font-size:14px;font-weight:500;color:var(--ink);}
+  .testi-author .role{font-size:12px;color:var(--muted);}
+
+  /* ---------- pricing ---------- */
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
+  .tier-card{
+    background:var(--surface-card);
+    border:1px solid var(--hairline);
+    border-radius:var(--r-lg);padding:32px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+  .tier-card .plan{font-size:11px;font-weight:600;letter-spacing:.88px;text-transform:uppercase;color:var(--muted);}
+  .tier-card .price-line{font-size:36px;font-weight:400;letter-spacing:-.72px;line-height:1;color:var(--ink);font-family:var(--font-display);}
+  .tier-card .price-line span{font-size:13px;color:var(--muted);letter-spacing:0;font-family:var(--font-mono);}
+  .tier-card .tier-desc{font-size:14px;color:var(--body);}
+  .tier-card .btn-secondary,.tier-card .btn-primary{width:100%;}
+  .tier-card ul{list-style:none;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--hairline-soft);padding-top:20px;}
+  .tier-card li{display:flex;gap:10px;font-size:14px;color:var(--body);}
+  .tier-card li .check{color:var(--primary);flex-shrink:0;}
+  .tier-featured{background:var(--ink);border-color:var(--ink);}
+  .tier-featured .plan{color:var(--muted-soft);}
+  .tier-featured .price-line{color:var(--canvas);}
+  .tier-featured .price-line span{color:var(--muted-soft);}
+  .tier-featured .tier-desc{color:var(--muted-soft);}
+  .tier-featured li{color:var(--muted);}
+  .tier-featured li .check{color:var(--on-dark);}
+  .tier-featured ul{border-top-color:rgba(255,255,255,.12);}
+  .tier-featured .badge-pill{background:var(--surface-dark-elevated);color:var(--on-dark);margin-bottom:4px;}
+  .tier-featured .badge-pill{width:max-content;}
+
+  /* ---------- FAQ ---------- */
+  .faq-row{border-bottom:1px solid var(--hairline);}
+  .faq-q{
+    width:100%;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    font-size:16px;font-weight:500;line-height:1.5;color:var(--ink);
+    padding:12px 0;text-align:left;
+  }
+  .faq-q:hover{color:var(--muted);}
+  .faq-q .pm{color:var(--muted-soft);font-weight:400;}
+  .faq-a{display:none;font-size:16px;line-height:1.5;color:var(--body);padding:0 0 12px 28px;}
+  .faq-row.open .faq-a{display:block;}
+
+  /* ---------- newsletter ---------- */
+  .newsletter{max-width:720px;margin:96px auto 0;text-align:center;}
+  .newsletter form{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;margin-top:16px;text-align:left;}
+  .text-input{
+    background:var(--surface-soft);
+    border:1px solid var(--hairline);
+    color:var(--ink);
+    font-family:var(--font-mono);font-size:15px;line-height:1.5;
+    padding:8px 12px;height:40px;border-radius:var(--r-md);
+    flex:1;min-width:220px;
+    outline:none;
+  }
+  .text-input:focus{background:var(--canvas);border-color:var(--ink);}
+  .form-note{margin-top:8px;font-size:13px;color:var(--muted-soft);}
+
+  /* ---------- cta band ---------- */
+  .cta-band{padding:96px 24px;text-align:center;}
+  .cta-band h2{font-family:var(--font-display);font-size:36px;font-weight:400;letter-spacing:-.72px;line-height:1.2;margin-bottom:24px;}
+  .cta-band .note{margin-top:16px;font-size:13px;color:var(--muted);}
+
+  /* ---------- footer ---------- */
+  .footer{
+    border-top:1px solid var(--hairline);
+    background:var(--canvas);
+    padding:32px 0;
+  }
+  .footer-links{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    max-width:960px;margin:0 auto;text-align:center;
+  }
+  .footer-links a{font-size:14px;line-height:2;color:var(--body);padding:8px 0;display:block;}
+  .footer-links a:hover{color:var(--ink);text-decoration:underline;}
+  .footer-links div+div{border-left:1px solid var(--hairline);}
+  .footer-bottom{
+    max-width:960px;margin:24px auto 0;padding:24px 0 0;
+    border-top:1px solid var(--hairline);
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    font-size:13px;color:var(--muted);
+  }
+  .footer-bottom .util{display:flex;gap:20px;flex-wrap:wrap;}
+  .footer-bottom .util a:hover{color:var(--ink);}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1024px){
+    .display-mega{font-size:56px;letter-spacing:-1.6px;}
+    .feat-grid{grid-template-columns:repeat(2,1fr);}
+    .footer-links{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (max-width:980px){
+    .nav-links{gap:14px;}
+    .signin{display:none;}
+    .nav-inner{gap:12px;}
+  }
+  @media (max-width:850px){
+    .stats{grid-template-columns:1fr 1fr 1fr;}
+  }
+  @media (max-width:768px){
+    .nav-links,.signin{display:none;}
+    .hamburger{display:inline-flex;margin-left:auto;}
+    .nav-actions .btn-primary{margin-left:auto;}
+    .mobile-sheet.open{display:block;max-height:calc(100dvh - 64px);overflow-y:auto;}
+    body.menu-open{overflow:hidden;}
+    .section{padding:64px 24px 0;}
+    .install-section{padding-top:0;}
+    .stats{margin-top:64px;}
+    .hero{padding:56px 24px 32px;}
+    .hero h1{max-width:100%;}
+    .tui-frame{padding:48px 20px;margin-top:64px;}
+    .wm-dark{width:280px;height:38px;}
+    .tui-hints{text-align:left;}
+    .tui-hints{display:flex;flex-wrap:wrap;gap:4px 20px;}
+    .tui-hints span{margin:0;}
+    .tui-prompt{align-items:flex-start;}
+    .install-snippet{align-items:flex-start;}
+    .install-snippet code{white-space:pre-wrap;overflow-x:visible;overflow-wrap:anywhere;word-break:break-word;}
+    .pricing-grid,.testi-grid{grid-template-columns:1fr;}
+    .split{grid-template-columns:1fr;}
+    .newsletter{margin-top:64px;}
+    .cta-band{padding:64px 24px;}
+    .footer-links{grid-template-columns:repeat(2,1fr);text-align:left;padding:0 24px;}
+    .footer-links div+div{border-left:0;}
+    .footer-links div{border-bottom:1px solid var(--hairline);}
+    .footer-bottom{padding:24px 24px 0;}
+  }
+  @media (max-width:640px){
+    .display-mega{font-size:30px;line-height:1.2;letter-spacing:-.6px;}
+    .display-lg{font-size:26px;line-height:1.25;letter-spacing:-.3px;}
+    .feat-grid{grid-template-columns:1fr;}
+    .stats{grid-template-columns:1fr;margin-top:48px;}
+    .install-tabs{overflow-x:auto;flex-wrap:nowrap;}
+    .tab-btn{white-space:nowrap;}
+    .hero h1 .accent{display:none;}
+    .nav-inner{padding:0 16px;}
+    .wm{width:96px;height:13px;}
+    .tier-card{padding:24px;}
+    .comparison-card{padding:16px;}
+    .comp-head,.comp-row{font-size:12px;}
+    .comp-head{grid-template-columns:minmax(0,1fr) 42px 76px;font-size:10px;letter-spacing:.5px;}
+    .comp-row{grid-template-columns:minmax(0,1fr) 42px 76px;}
+    .comp-row{padding:10px 0;}
+    .list-row{grid-template-columns:24px minmax(0,1fr);column-gap:8px;row-gap:2px;align-items:start;}
+    .list-row .mark{grid-row:1 / span 2;}
+    .list-row .label{grid-column:2;}
+    .list-row .desc{grid-column:2;}
+    .feature-card{padding:20px;}
+    .footer-links{grid-template-columns:1fr;}
+    .footer-links div{border-bottom:1px solid var(--hairline);}
+    .footer-links div:last-child{border-bottom:0;}
+    .newsletter form{flex-direction:column;}
+    .newsletter .text-input{width:100%;min-width:0;}
+    .newsletter .btn-primary{width:100%;}
+    .hero-ctas{flex-direction:column;align-items:stretch;width:min(100%,320px);margin-inline:auto;}
+    .hero-ctas .btn-primary,.hero-ctas .btn-secondary{width:100%;}
+    .hero-note{max-width:280px;margin-inline:auto;}
+    .split-copy h2{font-size:28px;line-height:1.25;letter-spacing:-.3px;}
+    .cta-band h2{font-size:28px;}
+    .tui-frame{margin-top:48px;}
+    .tui-prompt{font-size:13px;}
+    .footer-bottom{align-items:flex-start;flex-direction:column;}
+  }
+  @media (max-width:420px){
+    .display-mega{font-size:30px;line-height:1.18;}
+    .hero{padding:40px 16px 24px;}
+    .hero h1 br{display:none;}
+    .hero-ctas{flex-direction:column;width:100%;}
+    .hero-ctas .btn-primary,.hero-ctas .btn-secondary{width:100%;}
+    .section{padding:48px 20px 0;}
+    .install-section{padding-top:0;}
+    .install-inner{max-width:100%;}
+    .install-snippet{padding:10px 12px;}
+    .install-snippet code{font-size:12px;}
+    .tui-frame{padding:40px 16px;}
+    .wm-dark{width:200px;height:27px;}
+    .tui-prompt{font-size:12px;gap:8px;}
+    .tui-hints{font-size:11px;}
+    .cta-band h2{font-size:26px;}
+    .split-copy h2{font-size:26px;}
+    .wm{width:88px;height:12px;}
+    .nav-inner{gap:8px;}
+    .nav-actions{gap:8px;}
+    .nav-actions .btn-primary{padding-left:12px;padding-right:12px;font-size:12px;}
+    .comparison-card{padding:12px;}
+    .comp-head{grid-template-columns:minmax(0,1fr) 30px 54px;font-size:9px;}
+    .comp-row{grid-template-columns:minmax(0,1fr) 30px 54px;font-size:11px;}
+    .comp-row{padding:9px 0;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;}
+  }
+</style>
 </head>
 <body>
-    <div class="background-system">
-        <div class="perspective-floor"></div>
-        <div class="spotlight"></div>
+
+<header class="top-nav">
+  <div class="nav-inner">
+    <a href="#top" aria-label="Hackimi home">
+      <svg class="wm" viewBox="0 0 37 5" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="9" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="19" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/><rect x="25" y="0" width="1" height="1"/><rect x="26" y="0" width="1" height="1"/><rect x="25" y="1" width="1" height="1"/><rect x="25" y="2" width="1" height="1"/><rect x="25" y="3" width="1" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="25" y="4" width="1" height="1"/><rect x="26" y="4" width="1" height="1"/><rect x="28" y="0" width="1" height="1"/><rect x="32" y="0" width="1" height="1"/><rect x="28" y="1" width="1" height="1"/><rect x="29" y="1" width="1" height="1"/><rect x="31" y="1" width="1" height="1"/><rect x="32" y="1" width="1" height="1"/><rect x="28" y="2" width="1" height="1"/><rect x="30" y="2" width="1" height="1"/><rect x="32" y="2" width="1" height="1"/><rect x="28" y="3" width="1" height="1"/><rect x="32" y="3" width="1" height="1"/><rect x="28" y="4" width="1" height="1"/><rect x="32" y="4" width="1" height="1"/><rect x="34" y="0" width="1" height="1"/><rect x="35" y="0" width="1" height="1"/><rect x="36" y="0" width="1" height="1"/><rect x="35" y="1" width="1" height="1"/><rect x="35" y="2" width="1" height="1"/><rect x="35" y="3" width="1" height="1"/><rect x="34" y="4" width="1" height="1"/><rect x="35" y="4" width="1" height="1"/><rect x="36" y="4" width="1" height="1"/></svg>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#docs">Docs</a>
+      <a href="#faq">Enterprise</a>
+      <a href="#footer">GitHub <span class="k">[150K]</span></a>
+    </nav>
+    <div class="nav-actions">
+      <a class="signin" href="#pricing">Sign In</a>
+      <a class="btn-primary" href="#install">Download</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">≡</button>
     </div>
+  </div>
+</header>
 
-    <main class="hero">
-        <div class="hero-container">
-            <div class="badge-row">
-                <span class="mono-label">BUILD_VER_1.0.4</span>
-            </div>
+<div class="mobile-sheet" id="sheet">
+  <a href="#features">Features</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#docs">Docs</a>
+  <a href="#faq">Enterprise</a>
+  <a href="#footer">GitHub [150K]</a>
+  <a class="btn-primary" href="#install">Download</a>
+</div>
 
-            <h1 class="brand-title">Hackimi</h1>
+<main id="top">
 
-            <p class="hero-tagline">
-                AI-Native Development Environment designed for the <br>
-                <span>architects of tomorrow.</span>
-            </p>
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <span class="badge-pill">Introducing Hackimi 2.0</span>
+    <h1 class="display-mega">Code<span class="accent">,</span> with an agent that<br>never loses the thread.</h1>
+    <p class="sub">Hackimi is the open-source AI coding agent that lives in your terminal and your IDE. It reads, greps, edits, and tests across your whole repo — local-first, and completely yours.</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#install">Read docs&nbsp;&rarr;</a>
+      <a class="btn-secondary" href="#download">Download</a>
+    </div>
+    <p class="hero-note">Free for personal use &middot; macOS, Windows, and Linux &middot; MIT licensed</p>
+  </section>
 
-            <div class="hero-actions">
-                <a href="https://github.com/hackdeacon/hackimi" class="btn-premium">
-                    <span>Explore Project</span>
-                    <div class="btn-glow"></div>
-                </a>
-            </div>
-        </div>
-    </main>
+  <!-- ============ Install ============ -->
+  <section class="section install-section" id="install">
+    <div class="install-inner">
+      <div class="install-tabs" role="tablist" aria-label="Install method">
+        <button class="tab-btn active" role="tab" aria-selected="true" data-cmd="curl -fsSL https://hackimi.sh/install | bash">curl</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-cmd="npm i -g hackimi">npm</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-cmd="bun add -g hackimi">bun</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-cmd="brew install hackimi">brew</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-cmd="yay -S hackimi">yay</button>
+      </div>
+      <div class="install-snippet">
+        <code id="install-cmd">curl -fsSL https://hackimi.sh/install | bash</code>
+        <button class="copy-btn" id="copy-btn" aria-label="Copy install command">[copy]</button>
+      </div>
+      <p class="install-note">Requires macOS 12+, Windows 10+, or any modern Linux. No GPU required to start.</p>
+    </div>
+  </section>
 
-    <footer class="footer">
-        <div class="footer-inner">
-            <p class="footer-credits">© 2026 Hackimi — Design for future.</p>
-        </div>
-    </footer>
+  <!-- ============ TUI mockup ============ -->
+  <div class="tui-frame" role="img" aria-label="Terminal showing a Hackimi build command with model and Zen tokens">
+    <div class="tui-inner">
+      <svg class="wm-dark" viewBox="0 0 37 5" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="0" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="8" y="0" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="9" y="1" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="8" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/><rect x="14" y="0" width="1" height="1"/><rect x="15" y="0" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="16" y="1" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="16" y="3" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="15" y="4" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="22" y="0" width="1" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="21" y="1" width="1" height="1"/><rect x="18" y="2" width="1" height="1"/><rect x="19" y="2" width="1" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="18" y="3" width="1" height="1"/><rect x="21" y="3" width="1" height="1"/><rect x="18" y="4" width="1" height="1"/><rect x="22" y="4" width="1" height="1"/><rect x="24" y="0" width="1" height="1"/><rect x="25" y="0" width="1" height="1"/><rect x="26" y="0" width="1" height="1"/><rect x="25" y="1" width="1" height="1"/><rect x="25" y="2" width="1" height="1"/><rect x="25" y="3" width="1" height="1"/><rect x="24" y="4" width="1" height="1"/><rect x="25" y="4" width="1" height="1"/><rect x="26" y="4" width="1" height="1"/><rect x="28" y="0" width="1" height="1"/><rect x="32" y="0" width="1" height="1"/><rect x="28" y="1" width="1" height="1"/><rect x="29" y="1" width="1" height="1"/><rect x="31" y="1" width="1" height="1"/><rect x="32" y="1" width="1" height="1"/><rect x="28" y="2" width="1" height="1"/><rect x="30" y="2" width="1" height="1"/><rect x="32" y="2" width="1" height="1"/><rect x="28" y="3" width="1" height="1"/><rect x="32" y="3" width="1" height="1"/><rect x="28" y="4" width="1" height="1"/><rect x="32" y="4" width="1" height="1"/><rect x="34" y="0" width="1" height="1"/><rect x="35" y="0" width="1" height="1"/><rect x="36" y="0" width="1" height="1"/><rect x="35" y="1" width="1" height="1"/><rect x="35" y="2" width="1" height="1"/><rect x="35" y="3" width="1" height="1"/><rect x="34" y="4" width="1" height="1"/><rect x="35" y="4" width="1" height="1"/><rect x="36" y="4" width="1" height="1"/></svg>
+      <div class="tui-prompt">
+        <span class="pipe">│</span>
+        <span class="cmd">Build</span>
+        <span class="model">[Hackimi v2]</span>
+        <span class="zen">[Hackimi Zen]</span>
+      </div>
+      <div class="tui-hints">
+        <span>tab&nbsp;&nbsp;switch agent</span>
+        <span>ctrl-p&nbsp;&nbsp;commands</span>
+      </div>
+    </div>
+  </div>
 
-    <script src="main.js"></script>
+  <!-- ============ Stats ============ -->
+  <section class="stats">
+    <div class="stat"><div class="num">3.4&times;</div><div class="label">faster PR merge time on teams that run Hackimi</div></div>
+    <div class="stat"><div class="num">9.2M</div><div class="label">lines indexed per workspace, per day</div></div>
+    <div class="stat"><div class="num">27min</div><div class="label">average agent session, end to end</div></div>
+  </section>
+
+  <!-- ============ What is Hackimi ============ -->
+  <section class="section" id="docs">
+    <div class="sec-head">
+      <span class="hash">[x]</span>
+      <h2>What is Hackimi?</h2>
+    </div>
+    <div style="max-width:680px;">
+      <p class="body-md" style="margin-bottom:16px;">Hackimi is an open-source coding agent you can run anywhere — your laptop, your own GPU box, or a cloud cluster when you need more. It reads your entire repository into context, plans edits across files, runs tests, and shows you every change as a reviewable diff.</p>
+      <p class="body-md">One agent, two frontends: a TUI inside your terminal, and a panel inside your editor. Same session, same plan, same privacy. Read the <a class="link-inline" href="#features">docs</a> or start with a one-line install above.</p>
+    </div>
+  </section>
+
+  <!-- ============ Features ============ -->
+  <section class="section" id="features">
+    <div class="sec-center">
+      <span class="eyebrow label-up">Features</span>
+      <h2 class="display-lg">Everything between your first tab press and your merge button.</h2>
+      <p class="note caption-sm" style="max-width:420px;">Same agent, both worlds — terminal native, IDE friendly, CI ready.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2 C10.5 4.5 10.5 7 9 9 C7.5 11 7.5 13.5 9 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 9 C5.5 7.5 8 7.5 9 9 C10 10.5 12.5 10.5 15 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        <h3>Infinite context</h3>
+        <p>Indexes your whole repo — the code, the tests, and the 9-month-old decision in the comments.</p>
+        <span class="f-code">make clean &amp;&amp; hackimi index</span>
+      </div>
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 13 L13 4.5 M13 4.5 H8.5 M13 4.5 V9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>Agent from anywhere</h3>
+        <p>Queue work from your editor, CLI, or CI. Local or cloud GPUs — same session, same plan.</p>
+        <span class="f-code">hackimi deploy app --gpu 4</span>
+      </div>
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M5 9.5 L8 7.5 L11 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14.5 H15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        <h3>Rules that stick</h3>
+        <p>One rules file for the team. The agent inherits your conventions, your CI gates, and your API style.</p>
+        <span class="f-code">rules: "no fetch without abort signals"</span>
+      </div>
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M9 5.5 V9 L11.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        <h3>Time-travel diffs</h3>
+        <p>Every agent edit is a reviewable diff. Approve, reject, or fork the session and keep both branches.</p>
+        <span class="f-code">hackimi session ls --recent 30</span>
+      </div>
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2.5 L12 5 H15 V9 L17 11.5 L15 12.5 V15.5 H3 V12.5 L1 11.5 L3 9 V5 H6 Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9" cy="9.5" r="2" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <h3>Private by default</h3>
+        <p>Your code never trains anything, and never leaves your machine unless you deploy it yourself.</p>
+        <span class="f-code">--privacy "yours, absolute"</span>
+      </div>
+      <div class="feature-card">
+        <span class="f-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14 L6 10 L9 12.5 L16 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.5 5 H16 V8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>Measured, not marketed</h3>
+        <p>Real benchmarks from real repos, published monthly. Try it on your own codebase first.</p>
+        <span class="f-code">hackimi benchmark run .</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Privacy list rows ============ -->
+  <section class="section">
+    <div class="sec-head">
+      <span class="hash">[+]</span>
+      <h2>Built for privacy first</h2>
+    </div>
+    <div>
+      <div class="list-row">
+        <span class="mark">[x]</span>
+        <span class="label">Agentic editing</span>
+        <span class="desc">Edits across files with a plan you can review — diff by diff.</span>
+      </div>
+      <div class="list-row">
+        <span class="mark">[x]</span>
+        <span class="label">Local-first</span>
+        <span class="desc">Runs on your machine; cloud only when you ask for it.</span>
+      </div>
+      <div class="list-row">
+        <span class="mark plus">[+]</span>
+        <span class="label">Zen access</span>
+        <span class="desc">One bill for Claude, GPT, Gemini — switch mid-task. Now in open beta.</span>
+      </div>
+      <div class="list-row">
+        <span class="mark">[x]</span>
+        <span class="label">Terminal native</span>
+        <span class="desc">The same agent in your IDE, your shell, and your CI pipeline.</span>
+      </div>
+      <div class="list-row">
+        <span class="mark">[-]</span>
+        <span class="label">Open source</span>
+        <span class="desc">MIT licensed — fork it, run it, own it, audit it.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Comparison ============ -->
+  <section class="section">
+    <div class="split">
+      <div class="split-copy">
+        <h2>Doesn't just autocomplete your code. Understands your codebase.</h2>
+        <p>Other tools see the file you're in. Hackimi sees the convention, the failing test, and the commit you made at 1am — and it knows what to do next.</p>
+        <a class="btn-tertiary" href="#pricing">See what's included&nbsp;&rarr;</a>
+      </div>
+      <div class="comparison-card">
+        <div class="comp-head"><span></span><span class="us">Hackimi</span><span>Other AI tools</span></div>
+        <div class="comp-row"><span class="label">Understands your whole repo</span><span class="yes">&#10003;</span><span class="no">&#10007;</span></div>
+        <div class="comp-row"><span class="label">Inherits your team rules</span><span class="yes">&#10003;</span><span class="no">&#10007;</span></div>
+        <div class="comp-row"><span class="label">Runs reviewable agent diffs</span><span class="yes">&#10003;</span><span class="no">&#10007;</span></div>
+        <div class="comp-row"><span class="label">Local &amp; cloud runtimes</span><span class="yes">&#10003;</span><span class="no">&#10007;</span></div>
+        <div class="comp-row"><span class="label">Your data stays yours</span><span class="yes">&#10003;</span><span class="no">&#10007;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Testimonials ============ -->
+  <section class="section">
+    <div class="sec-center">
+      <span class="eyebrow label-up">Testimonials</span>
+      <h2 class="display-lg">What engineers say after their third sprint with it.</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testimonial-card">
+        <blockquote>&ldquo;It reads an 18-month-old pull request thread and <em>gets it</em>. I stopped explaining our codebase to my tools.&rdquo;</blockquote>
+        <div class="testi-author"><span class="avatar">MC</span><span><span class="name" style="display:block;">Maya Chen</span><span class="role">Staff Engineer, Loop</span></span></div>
+      </div>
+      <div class="testimonial-card">
+        <blockquote>&ldquo;The agent found a race condition my team had chased for two quarters. <em>In 40 minutes.</em> We run it on every PR now.&rdquo;</blockquote>
+        <div class="testi-author"><span class="avatar">DK</span><span><span class="name" style="display:block;">Dario Kova&#269;</span><span class="role">VP Engineering, Kestrel</span></span></div>
+      </div>
+      <div class="testimonial-card">
+        <blockquote>&ldquo;Onboarding shipped faster than the task ticket. I wrote <em>one rules file</em>, and every junior's agent passed review.&rdquo;</blockquote>
+        <div class="testi-author"><span class="avatar">AS</span><span><span class="name" style="display:block;">Ana Silva</span><span class="role">Tech Lead, Kite</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Pricing ============ -->
+  <section class="section" id="pricing">
+    <div class="sec-center">
+      <span class="eyebrow label-up">Pricing</span>
+      <h2 class="display-lg">Pay for compute. Never for your own code.</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="tier-card">
+        <span class="plan">Hobby</span>
+        <div class="price-line">$0 <span>&mdash; forever</span></div>
+        <p class="tier-desc">For personal projects and learning. Runs entirely on your machine.</p>
+        <a class="btn-secondary" href="#install">Download</a>
+        <ul>
+          <li><span class="check">&#10003;</span> Unlimited tab completions</li>
+          <li><span class="check">&#10003;</span> Local agent sessions</li>
+          <li><span class="check">&#10003;</span> Community support</li>
+        </ul>
+      </div>
+      <div class="tier-card tier-featured">
+        <span class="badge-pill" style="display:inline-flex;">Most popular</span>
+        <span class="plan">Pro</span>
+        <div class="price-line">$20 <span>/mo</span></div>
+        <p class="tier-desc">For engineers who ship weekly. Agents on laptop or cloud GPU.</p>
+        <a class="btn-primary" href="#install">Get Pro</a>
+        <ul>
+          <li><span class="check">&#10003;</span> Everything in Hobby, plus:</li>
+          <li><span class="check">&#10003;</span> Cloud agent, 30k context</li>
+          <li><span class="check">&#10003;</span> Team rules &amp; shared sessions</li>
+          <li><span class="check">&#10003;</span> Priority support</li>
+        </ul>
+      </div>
+      <div class="tier-card">
+        <span class="plan">Teams</span>
+        <div class="price-line">$40 <span>/seat &middot; mo</span></div>
+        <p class="tier-desc">For teams that want one reviewable plan across every engineer.</p>
+        <a class="btn-secondary" href="#install">Start 14-day trial</a>
+        <ul>
+          <li><span class="check">&#10003;</span> Everything in Pro, plus:</li>
+          <li><span class="check">&#10003;</span> SSO and seat management</li>
+          <li><span class="check">&#10003;</span> Admin dashboard &amp; audit log</li>
+          <li><span class="check">&#10003;</span> Dedicated support engineer</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section" id="faq">
+    <div class="sec-head">
+      <span class="hash">[?]</span>
+      <h2>FAQ</h2>
+    </div>
+    <div class="faq-row">
+      <button class="faq-q" aria-expanded="false">How is Hackimi different from other AI coding agents?<span class="pm">+</span></button>
+      <div class="faq-a">Hackimi plans edits across your whole repository before touching a file, and every change lands as a reviewable diff. Other agents autocomplete; Hackimi audits itself.</div>
+    </div>
+    <div class="faq-row">
+      <button class="faq-q" aria-expanded="false">Can I use my own models?<span class="pm">+</span></button>
+      <div class="faq-a">Yes. Point Hackimi at any open-weights model — hackimi-v2, Llama, Qwen, DeepSeek — or at the Zen marketplace for hosted frontier models. No lock-in.</div>
+    </div>
+    <div class="faq-row">
+      <button class="faq-q" aria-expanded="false">How does Hackimi stay private?<span class="pm">+</span></button>
+      <div class="faq-a">Everything runs locally by default. Your code, prompts, and outputs never leave your machine unless you deploy them yourself, and no model is ever trained on your data.</div>
+    </div>
+    <div class="faq-row">
+      <button class="faq-q" aria-expanded="false">Is Hackimi really free?<span class="pm">+</span></button>
+      <div class="faq-a">The agent is MIT licensed and free forever, for personal use and commercial use alike. You only pay for compute when you need more than your own hardware provides.</div>
+    </div>
+  </section>
+
+  <!-- ============ Newsletter ============ -->
+  <section class="newsletter">
+    <span class="badge-pill">Newsletter</span>
+    <p class="title-md" style="margin-top:12px;">Get release notes in your inbox. No spam, ever.</p>
+    <form id="nl-form">
+      <input class="text-input" type="email" placeholder="you@company.com" required aria-label="Email address">
+      <button class="btn-primary" type="submit" id="nl-btn">Subscribe</button>
+    </form>
+    <p class="form-note" id="nl-note">On subscribe you agree to processing per our privacy policy.</p>
+  </section>
+
+  <!-- ============ CTA band ============ -->
+  <section class="cta-band" id="download">
+    <h2>Try Hackimi now.</h2>
+    <a class="btn-primary" href="#install">Download for free</a>
+    <p class="note">Free 2-week Pro trial &mdash; no credit card, no fine print.</p>
+  </section>
+
+</main>
+
+<!-- ============ Footer ============ -->
+<footer class="footer" id="footer">
+  <div class="footer-links">
+    <div><a href="#download">Download</a></div>
+    <div><a href="#docs">Docs</a></div>
+    <div><a href="#stats">Changelog</a></div>
+    <div><a href="#faq">Discord</a></div>
+    <div><a href="#faq">GitHub [150K]</a></div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Hackimi</span>
+    <span class="util">
+      <a href="#top">Brand</a>
+      <a href="#top">Privacy</a>
+      <a href="#top">Terms</a>
+      <a href="#top">English&nbsp;&#9660;</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  // install tabs
+  var tabs = document.querySelectorAll('.tab-btn');
+  var installCmd = document.getElementById('install-cmd');
+  var copyBtn = document.getElementById('copy-btn');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
+      t.classList.add('active');
+      t.setAttribute('aria-selected','true');
+      installCmd.textContent = t.dataset.cmd;
+      copyBtn.classList.remove('ok');
+      copyBtn.textContent = '[copy]';
+    });
+  });
+
+  // copy
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+  copyBtn.addEventListener('click', function(){
+    copyText(installCmd.textContent).then(function(){
+      copyBtn.classList.add('ok');
+      copyBtn.textContent = '[ok] copied';
+      setTimeout(function(){ copyBtn.classList.remove('ok'); copyBtn.textContent = '[copy]'; }, 1600);
+    });
+  });
+
+  // FAQ toggle
+  document.querySelectorAll('.faq-q').forEach(function(q){
+    q.addEventListener('click', function(){
+      var row = q.parentElement;
+      var open = row.classList.toggle('open');
+      q.setAttribute('aria-expanded', open ? 'true' : 'false');
+      q.querySelector('.pm').textContent = open ? '\u2212' : '+';
+    });
+  });
+
+  // mobile drawer
+  var hamburger = document.getElementById('hamburger');
+  var sheet = document.getElementById('sheet');
+  hamburger.addEventListener('click', function(){
+    var open = sheet.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    hamburger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.body.classList.toggle('menu-open', open);
+  });
+  sheet.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      sheet.classList.remove('open');
+      hamburger.setAttribute('aria-expanded','false');
+      document.body.classList.remove('menu-open');
+    });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      sheet.classList.remove('open');
+      hamburger.setAttribute('aria-expanded','false');
+      document.body.classList.remove('menu-open');
+    }
+  });
+
+  // newsletter
+  document.getElementById('nl-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var btn = document.getElementById('nl-btn');
+    var note = document.getElementById('nl-note');
+    var old = btn.textContent;
+    btn.textContent = '[ok] subscribed';
+    note.textContent = 'Check your inbox. — hackimi.sh';
+    setTimeout(function(){ btn.textContent = old; }, 2400);
+    this.reset();
+  });
+</script>
 </body>
 </html>
