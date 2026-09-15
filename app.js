@@ -231,7 +231,7 @@
     }
     agents.forEach(function (agent) {
       var card = el("article", "agent-card");
-      var image = makeImage(agent.image, agent.name, "agent-img", false, "agent");
+      var image = makeImage(agent.image, agent.name, "agent-img", false, "agent", true);
       applyAgentTint(card, image);
       card.appendChild(image);
       card.appendChild(el("h3", "agent-name", agent.name));
