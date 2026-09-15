@@ -234,11 +234,8 @@
       var image = makeImage(agent.image, agent.name, "agent-img", false, "agent");
       applyAgentTint(card, image);
       card.appendChild(image);
-
-      var body = el("div", "agent-body");
-      body.appendChild(el("h3", "agent-name", agent.name));
-      if (agent.role) body.appendChild(el("span", "agent-role", agent.role));
-      card.appendChild(body);
+      card.appendChild(el("h3", "agent-name", agent.name));
+      if (agent.role) card.appendChild(el("span", "agent-role", agent.role));
 
       grid.appendChild(card);
     });

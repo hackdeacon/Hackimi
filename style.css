@@ -166,6 +166,7 @@ img {
 }
 
 .agent-card {
+  position: relative;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--hairline);
@@ -199,22 +200,22 @@ img {
   object-fit: cover;
 }
 
-.agent-body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 14px;
+.agent-role {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 2;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .agent-name {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
   font-size: 15px;
   font-weight: 600;
-}
-
-.agent-role {
-  font-size: 13px;
-  color: var(--text-secondary);
 }
 
 .skin-grid {
@@ -555,10 +556,6 @@ img {
   .tag {
     margin-top: 2px;
     font-size: 13px;
-  }
-
-  .agent-body {
-    padding: 10px 12px;
   }
 
   .agent-name {
