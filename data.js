@@ -9,10 +9,10 @@ const PROFILE = {
     image: "https://rz.hackstory.cn/valorant/Gold_3_Rank.webp"
   },
   agents: [
-    { name: "暮蝶", role: "控场", image: "/res/clove.png" },
-    { name: "壹决", role: "决斗", image: "/res/iso.png" },
-    { name: "盖可", role: "先锋", image: "/res/gekko.png" },
-    { name: "蝰蛇", role: "(哨卫)", image: "/res/viper.png" }
+    { name: "暮蝶", role: "控场", image: "https://c-valorant-api.op.gg/Assets/Characters/1DBF2EDD-4729-0984-3115-DAA5EED44993_full.png?image=q_auto:good,f_webp" },
+    { name: "壹决", role: "决斗", image: "https://c-valorant-api.op.gg/Assets/Characters/0E38B510-41A8-5780-5E8F-568B2A4F2D6C_full.png?image=q_auto:good,f_webp" },
+    { name: "盖可", role: "先锋", image: "https://c-valorant-api.op.gg/Assets/Characters/E370FA57-4757-3604-3648-499E1F642D3F_full.png?image=q_auto:good,f_webp" },
+    { name: "蝰蛇", role: "(哨卫)", image: "https://c-valorant-api.op.gg/Assets/Characters/707EAB51-4836-F488-046A-CDA6BF494859_full.png?image=q_auto:good,f_webp" }
   ],
   skinTiers: {
     "终极": "https://c-valorant-api.op.gg/Assets/ContentTiers/411E4A55-4E59-7757-41F0-86A53F101BB5.svg",
