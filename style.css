@@ -483,6 +483,10 @@ img {
     font-size: 14px;
   }
 
+  .skin-name {
+    font-size: 13px;
+  }
+
   .profile-info {
     flex: 1 1 auto;
     min-width: 0;
