@@ -15,9 +15,9 @@ const PROFILE = {
     { name: "蝰蛇", role: "(哨卫)", image: "https://c-valorant-api.op.gg/Assets/Characters/707EAB51-4836-F488-046A-CDA6BF494859_full.png?image=q_auto:good,f_webp" }
   ],
   skinTiers: {
-    "终极": "https://c-valorant-api.op.gg/Assets/ContentTiers/411E4A55-4E59-7757-41F0-86A53F101BB5.svg",
-    "传奇": "https://c-valorant-api.op.gg/Assets/ContentTiers/E046854E-406C-37F4-6607-19A9BA8426FC.svg",
-    "卓越": "https://c-valorant-api.op.gg/Assets/ContentTiers/60BCA009-4182-7998-DEE7-B8A2558DC369.svg"
+    "终极": "https://c-valorant-api.op.gg/Assets/ContentTiers/411E4A55-4E59-7757-41F0-86A53F101BB5.png",
+    "传奇": "https://c-valorant-api.op.gg/Assets/ContentTiers/E046854E-406C-37F4-6607-19A9BA8426FC.png",
+    "卓越": "https://c-valorant-api.op.gg/Assets/ContentTiers/60BCA009-4182-7998-DEE7-B8A2558DC369.png"
   },
   favoriteSkins: [
     { name: "奇点 蝴蝶刀", weapon: "近战", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/A0205EDF-40F7-EB71-2B1B-6C95C98A4D68.png" },
