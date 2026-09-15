@@ -1,45 +1,65 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hackimi | Refined AI-Native DevTools</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="无畏契约个人名片：段位、擅长英雄与皮肤收藏" />
+  <title>无畏契约名片</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="background-system">
-        <div class="perspective-floor"></div>
-        <div class="spotlight"></div>
-    </div>
-
-    <main class="hero">
-        <div class="hero-container">
-            <div class="badge-row">
-                <span class="mono-label">BUILD_VER_1.0.4</span>
-            </div>
-
-            <h1 class="brand-title">Hackimi</h1>
-
-            <p class="hero-tagline">
-                AI-Native Development Environment designed for the <br>
-                <span>architects of tomorrow.</span>
-            </p>
-
-            <div class="hero-actions">
-                <a href="https://github.com/hackdeacon/hackimi" class="btn-premium">
-                    <span>Explore Project</span>
-                    <div class="btn-glow"></div>
-                </a>
-            </div>
+  <div class="page">
+    <header class="profile">
+      <div class="avatar" id="avatar"></div>
+      <div class="profile-info">
+        <h1 class="name">
+          <span id="player-name">加载中</span>
+        </h1>
+        <p class="tag" id="player-tag"></p>
+      </div>
+      <div class="profile-meta">
+        <div class="rank">
+          <div class="rank-icon" id="rank-icon"></div>
+          <div class="rank-text">
+            <span class="meta-label">最高段位</span>
+            <span class="meta-value" id="rank-name">--</span>
+          </div>
         </div>
+        <div class="playtime">
+          <span class="meta-label">游戏时长</span>
+          <span class="meta-value" id="play-time">--</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <h2>擅长英雄</h2>
+        <div class="agent-grid" id="agents"></div>
+      </section>
+
+      <section class="section">
+        <h2>皮肤橱窗</h2>
+        <div class="skin-grid" id="favorite-skins"></div>
+      </section>
+
+      <section class="section">
+        <h2>卡面收藏</h2>
+        <div class="card-grid" id="cards"></div>
+      </section>
+
+      <section class="section" hidden>
+        <h2>皮肤橱窗</h2>
+        <div class="showcase-grid" id="showcase"></div>
+      </section>
     </main>
 
     <footer class="footer">
-        <div class="footer-inner">
-            <p class="footer-credits">© 2026 Hackimi — Design for future.</p>
-        </div>
+      Designed by <a href="https://x.com/hackdeacon" target="_blank" rel="noopener noreferrer">hackdeacon</a>
     </footer>
+  </div>
 
-    <script src="main.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
