@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>hackimi card</title>
+  <script src="data.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1200px; height: 630px; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      padding: 50px 64px 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .who { display: flex; align-items: center; gap: 36px; }
+    .avatar {
+      width: 144px; height: 144px; flex: none;
+      border-radius: 50%; object-fit: cover;
+      background: #fff; border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .name { font-size: 60px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+    .tag {
+      margin-top: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 30px; color: #6e6e73;
+    }
+    .meta { display: flex; gap: 16px; margin-top: 22px; }
+    .chip {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 26px;
+      background: #fff; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 18px;
+    }
+    .chip img { width: 54px; height: 54px; object-fit: contain; }
+    .chip .label { font-size: 18px; color: #6e6e73; }
+    .chip .value { font-size: 30px; font-weight: 700; }
+    .agents { display: flex; gap: 20px; }
+    .agent {
+      position: relative;
+      flex: 1 1 0;
+      height: 300px;
+      border-radius: 16px; overflow: hidden;
+      background: #fff; border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .agent img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .agent .an { position: absolute; top: 8px; right: 10px; font-size: 15px; font-weight: 600; }
+    .agent .ar { position: absolute; bottom: 8px; left: 10px; font-size: 13px; color: #6e6e73; }
+    .footer { display: flex; justify-content: space-between; font-size: 18px; color: #6e6e73; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="who">
+      <img class="avatar" id="avatar" alt="" />
+      <div>
+        <div class="name" id="name"></div>
+        <div class="tag" id="tag"></div>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="chip">
+        <img id="rank-icon" alt="" />
+        <div>
+          <div class="label">最高段位</div>
+          <div class="value" id="rank-name"></div>
+        </div>
+      </div>
+      <div class="chip">
+        <div>
+          <div class="label">游戏时长</div>
+          <div class="value" id="playtime"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="agents" id="agents"></div>
+
+  <div class="footer">
+    <span>hackimi.cn</span>
+    <span>Designed by hackdeacon</span>
+  </div>
+
+  <script>
+    (function () {
+      var P = typeof PROFILE !== "undefined" ? PROFILE : {};
+
+      function byId(id) { return document.getElementById(id); }
+      function hide(id) { var e = byId(id); if (e) e.style.display = "none"; }
+      function setImg(id, url) { if (url) byId(id).src = url; else hide(id); }
+
+      setImg("avatar", P.avatar);
+      setImg("rank-icon", P.peakRank && P.peakRank.image);
+      byId("name").textContent = P.name || "";
+      byId("tag").textContent = "#" + (P.tag || "");
+      byId("rank-name").textContent = (P.peakRank && P.peakRank.name) || "-";
+      byId("playtime").textContent = P.playTime || "-";
+
+      var box = byId("agents");
+      (P.agents || []).slice(0, 5).forEach(function (agent) {
+        var item = document.createElement("div");
+        item.className = "agent";
+        var img = document.createElement("img");
+        img.alt = "";
+        if (agent.image) img.src = agent.image;
+        item.appendChild(img);
+        var name = document.createElement("span");
+        name.className = "an";
+        name.textContent = agent.name || "";
+        item.appendChild(name);
+        var role = document.createElement("span");
+        role.className = "ar";
+        role.textContent = agent.role || "";
+        item.appendChild(role);
+        box.appendChild(item);
+      });
+    })();
+  </script>
+</body>
+</html>

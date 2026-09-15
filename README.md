@@ -277,6 +277,20 @@ render()
 | 名字 | 32px | — | 19px | 18px |
 | `#id` | 18px | 16px | 14px | 13px |
 
+## 社交卡片图（OG Image）
+
+`og.html` + `scripts/og.mjs` 用于生成分享到 Twitter/X 等平台时的预览图：
+
+```bash
+node scripts/og.mjs
+```
+
+- 用无头 Chrome 把 `og.html` 截成 `og.png`（1200×630，2 倍图 2400×1260）
+- 同时把 `data.js` 里的名字、`#id`、段位、时长写进 `index.html` 的 og / twitter meta
+- 需要本机装有 Chrome / Chromium，也可用 `CHROME=/path/to/chrome node scripts/og.mjs` 指定
+
+改完 `data.js` 后重新执行一次，提交 `og.png`（和更新后的 `index.html`）即可。
+
 ## 部署
 
 仓库已配置 GitHub Pages + 自定义域名，推送到 `main` 即自动构建：
