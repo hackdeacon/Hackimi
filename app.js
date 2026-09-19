@@ -59,57 +59,10 @@
     return document.getElementById(id);
   }
 
-  function setFavicon(url) {
-    var link = document.querySelector('link[rel="icon"]');
-    if (!link) {
-      link = document.createElement("link");
-      link.rel = "icon";
-      document.head.appendChild(link);
-    }
-    link.href = url;
-  }
-
-  function setCircularFavicon(url) {
-    var image;
-    try {
-      image = new Image();
-    } catch (e) {
-      setFavicon(url);
-      return;
-    }
-    image.crossOrigin = "anonymous";
-    image.onload = function () {
-      try {
-        var size = 64;
-        var canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        var ctx = canvas.getContext("2d");
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(image, 0, 0, size, size);
-        setFavicon(canvas.toDataURL("image/png"));
-      } catch (e) {
-        setFavicon(url);
-      }
-    };
-    image.onerror = function () {
-      setFavicon(url);
-    };
-    image.src = url;
-  }
-
   function renderHeader() {
     var rank = PROFILE.peakRank || {};
 
     document.title = (PROFILE.name || "无名玩家") + " #" + (PROFILE.tag || "0000");
-    if (PROFILE.avatar) {
-      setCircularFavicon(PROFILE.avatar);
-    } else {
-      setFavicon(placeholderImage(PROFILE.name, "square"));
-    }
 
     byId("avatar").appendChild(makeImage(PROFILE.avatar, PROFILE.name, "", true));
     byId("player-name").textContent = PROFILE.name || "无名玩家";

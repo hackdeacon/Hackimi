@@ -29,7 +29,7 @@
 - **卡面收藏**：图片按原比例展示，底部裁成圆角倒三角并渐变到黑
 - **主题**：Apple 极简风格，自动跟随系统浅色 / 深色模式，无任何动画
 - **响应式**：桌面 / 平板 / 手机三档，适配刘海屏安全区
-- **动态图标**：Favicon 由头像裁成圆形生成，标题为 `名字 #id`
+- **动态标题**：标题根据数据动态更新为 `名字 #id`
 - **健壮性**：图片为空或加载失败自动回退占位图；文字溢出用渐变淡出而非省略号
 
 ## 快速开始
@@ -132,7 +132,7 @@ const PROFILE = {
 
 ```
 render()
-├── renderHeader()        头部：头像、名字/#id、段位、时长、标题、Favicon
+├── renderHeader()        头部：头像、名字/#id、段位、时长、标题
 ├── renderAgents()        擅长英雄（含 applyAgentTint 取色）
 ├── renderFavoriteSkins() 皮肤橱窗（含 skinTiers 图标）
 ├── renderCards()         卡面收藏（含 applyCardClip 裁剪、applyCaptionTone 取色）
@@ -149,7 +149,6 @@ render()
 | `placeholderImage(label, shape)` | 生成 SVG 占位图（data URI） |
 | `setImage(node, url, label, shape)` | 设置图片并在失败时回退占位图 |
 | `makeImage(url, label, className, eager, shape, cors)` | 创建 `<img>` |
-| `setFavicon` / `setCircularFavicon` | 设置普通 / 圆形 Favicon |
 | `rgbToHsl` / `hslToRgb` / `hueToRgb` | HSL ↔ RGB 转换 |
 | `prefersDark()` | 当前是否为深色模式 |
 | `applyAgentTint(card, image)` | 英雄卡背景取色 |
@@ -176,16 +175,6 @@ render()
 ### 图片回退
 
 `setImage()` 在 `onerror` 时把 `src` 换成占位图；留空则直接使用占位图，因此任何一张图缺失都不会破版。
-
-### 圆形 Favicon
-
-`setCircularFavicon()` 用 canvas 把头像按圆形裁剪后导出 PNG data URI：
-
-1. `new Image()` 并设置 `crossOrigin="anonymous"`（头像源站需允许 CORS）
-2. `ctx.clip()` 出圆形，`drawImage` 到 64×64 画布
-3. `canvas.toDataURL("image/png")` 写入 `<link rel="icon">`
-
-任何一步失败（无头像、无 CORS、非浏览器环境）都会回退为直接用头像或占位图。
 
 ### 英雄卡取色
 
