@@ -25,7 +25,7 @@ const PROFILE = {
     { name: "耀鳞威龙", weapon: "鬼魅", tier: "卓越", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/A1EA10CD-4879-66FF-3B53-038F946F49D4.png" },
     { name: "千灵华绽", weapon: "正义", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/90222640-4D2E-2E6C-3E30-00BDF529E955.png" },
     { name: "2024 全球冠军赛", weapon: "幻影", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/3E4FF383-493D-4F52-BA0B-6A9DF9E6BEF8.png" },
-    { name: "侦察力量", weapon: "幻影", tier: "卓越", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/8478DE28-463D-5734-2D62-3E94C5D5A0C1.png" },
+    { name: "2026 全球冠军赛", weapon: "幻影", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/3EC220AA-4395-9927-28E3-01AA2C3CCB94.png" },
     { name: "洪荒怒焰", weapon: "狂徒", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/8F13CDCA-4235-8084-FBDA-E6AA9596ACBE.png" },
     { name: "RGX 11z Pro", weapon: "狂徒", tier: "传奇", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/038C6A4D-4FC5-5886-492C-FF8269661BF9.png" },
     { name: "盖亚的复仇", weapon: "狂徒", tier: "卓越", image: "https://c-valorant-api.op.gg/Assets/WeaponSkins/C9D93000-4133-3F68-20EA-81A307EF0540.png" },
